@@ -7,7 +7,6 @@ function addClass(video,styleClass) {
     for(var i=0; i < totalVideosOnPage; i++) {
         videoClassList = video[i].classList;
         videoClassList.add(styleClass);
-        console.log("[UltraWide] addClass",styleClass,video[i]);
     }
 }
 function remClass(video,styleClass) {
@@ -18,7 +17,6 @@ function remClass(video,styleClass) {
         videoClassList = video[i].classList; 
         if(videoClassList.contains(styleClass)) {
             videoClassList.remove(styleClass); 
-            console.log("[UltraWide] remClass",styleClass,video[i]);
         }
     }
 }
@@ -45,8 +43,6 @@ UltraWide.prototype.update = function() {
     }
 
     const video = document.getElementsByTagName('video');
-    console.log(video);
-    console.log("[UltraWide] Page Update", this.mode, this.scale, fullscreen);
 
     if(video.length !== 0) {
         switch(this.mode) {
@@ -104,7 +100,6 @@ function UltraWide() {
     document.addEventListener('keydown', function(hotKeyPressed) {
         if(hotKeyPressed.ctrlKey && hotKeyPressed.altKey && hotKeyPressed.key == 'c') {
             if(++this.mode > 2) this.mode = 0;
-            console.log("[UltraWide] Detected CTRL+ALT+C","Mode "+this.mode);
             chrome.storage.local.set({'extensionMode':this.mode}, function(){});
         }
     }.bind(this));
@@ -124,8 +119,9 @@ function onLoad() {
         ultrawide.mode = changes.extensionMode.newValue;
         ultrawide.update();
     });
-    console.info("UltraWide Extension Loaded!");
 }
+
+
 
 if(document.readyState == 'complete') onLoad();
 else window.addEventListener('load', onLoad);
