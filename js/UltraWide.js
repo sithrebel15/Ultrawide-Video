@@ -1,145 +1,131 @@
-UltraWide.prototype.classCheck = function() {
-    //    console.log(this.scale, this.fullscreen);
-    switch(this.mode) {
-            // 0: off; 1: aspect; 2: zoom;
-        case 0:
-            $("video").removeClass("extraClassAspect");
-            $("video").removeClass("extraClassCrop");
-            break;
-        case 1:
-            if(this.fullscreen && this.scale > 1) {
-                $("video").addClass("extraClassAspect");
-            }else{
-                $("video").removeClass("extraClassCrop");
-                $("video").removeClass("extraClassAspect");
-            }
-            break;
-        case 2:
-            if(this.fullscreen && this.scale > 1) {
-                $("video").addClass("extraClassCrop");
-            }else{
-                $("video").removeClass("extraClassAspect");
-                $("video").removeClass("extraClassCrop");
-            }
-            break;
-        case 3:
-            $("video").removeClass("extraClassAspect");
-            $("video").addClass("extraClassCrop");
-            break;
-        case 4:
-            $("video").addClass("extraClassAspect");
-            $("video").removeClass("extraClassCrop");
-            break;
+"use strict";
+
+function addClass(video,styleClass) {
+    var totalVideosOnPage = video.length;
+    var videoClassList = [];
+
+    for(var i=0; i < totalVideosOnPage; i++) {
+        videoClassList = video[i].classList;
+        videoClassList.add(styleClass);
+        console.log("[UltraWide] addClass",styleClass,video[i]);
+    }
+}
+function remClass(video,styleClass) {
+    var totalVideosOnPage = video.length;
+    var videoClassList = [];
+
+    for(var i=0; i < totalVideosOnPage; i++) {
+        videoClassList = video[i].classList; 
+        if(videoClassList.contains(styleClass)) {
+            videoClassList.remove(styleClass); 
+            console.log("[UltraWide] remClass",styleClass,video[i]);
+        }
+    }
+}
+
+UltraWide.prototype.update = function() {
+    //Calculate scale factor:
+    const aspect = screen.width / screen.height;
+    if(aspect >= 1.88) { //If wider than 16:9 widescreen:
+        const scale = aspect / 1.77; this.scale = Math.round(scale*100)/100;
+    } else if(this.mode == 3 || this.mode == 4) this.scale = 1.33; //Force Modes
+    else this.scale = 1; //Default
+
+    //Update Styles:
+    this.styles.innerHTML = ".extraClassAspect { -webkit-transform:scaleX("+this.scale+")!important; }"
+        +".extraClassCrop { -webkit-transform:scale("+this.scale+")!important; }";
+
+    //Update Classes:
+    let fullscreen;
+
+    if(document.webkitCurrentFullScreenElement !== null) {
+        fullscreen = true;
+    }else{
+        fullscreen = false;
     }
 
-};
+    const video = document.getElementsByTagName('video');
+    console.log(video);
+    console.log("[UltraWide] Page Update", this.mode, this.scale, fullscreen);
 
+    if(video.length !== 0) {
+        switch(this.mode) {
+            case 0: //Disabled
+                remClass(video,'extraClassAspect');
+                remClass(video,'extraClassCrop');
+                break; 
+            case 1: //Aspect
+                if(fullscreen && this.scale > 1) {
+                    addClass(video,'extraClassAspect');
+                    remClass(video,'extraClassCrop');
+                } else {
+                    remClass(video,'extraClassAspect');
+                    remClass(video,'extraClassCrop');
+                }
+                break; 
+            case 2: //Crop
+                if(fullscreen && this.scale > 1) {
+                    addClass(video,'extraClassCrop');
+                    remClass(video,'extraClassAspect');
+                } else {
+                    remClass(video,'extraClassAspect');
+                    remClass(video,'extraClassCrop');
+                }
+                break; 
+            case 3: //Force Crop
+                addClass(video,'extraClassCrop');
+                remClass(video,'extraClassAspect');
+                break; 
+            case 4: //Force Aspect
+                addClass(video,'extraClassAspect');
+                remClass(video,'extraClassCrop');
+                break;
+        }
+    } 
 
-function UltraWide()  {
-    this.scale = undefined;
-    this.fullscreen = false;
+    //Update every 12s in fullscreen mode:
+    if(fullscreen && this.mode > 0 && video.length > 0) {
+        if(this.timer != null) {
+            clearTimeout(this.timer);    
+        } 
+        this.timer = setTimeout(function() {
+            this.update();
+            this.timer = null;
+        }.bind(this), 5000);
+    }
+}
+
+function UltraWide() {
     this.mode = 0;
+    document.addEventListener('webkitfullscreenchange', function() {
+        this.update();
+    }.bind(this));
 
-    this.setScale = function() {
-        //get users screen dimensions
-        var width = screen.width;
-        var height = screen.height;
-
-        //get aspet ratio
-        var aspect = width/height;
-
-        //16:9 = 1.77
-
-        if(aspect >= 1.88) {
-            var scale = aspect / 1.77;
-            this.scale = Math.round(scale * 100) / 100;
-
-        }else if(this.mode == 3 || this.mode == 4) {
-            this.scale = 1.33;
-        }else {
-            this.scale = 1;
+    document.addEventListener('keydown', function(hotKeyPressed) {
+        if(hotKeyPressed.ctrlKey && hotKeyPressed.altKey && hotKeyPressed.key == 'c') {
+            if(++this.mode > 2) this.mode = 0;
+            console.log("[UltraWide] Detected CTRL+ALT+C","Mode "+this.mode);
+            chrome.storage.local.set({'extensionMode':this.mode}, function(){});
         }
+    }.bind(this));
 
-    };
+    this.styles = document.createElement('style');
+    document.body.appendChild(this.styles);
+}
 
-    this.fullscreenSet = function(cb) {
-        setTimeout((function() {
-            if (document.webkitCurrentFullScreenElement != null) {
-                this.fullscreen = true;
-            }else{
-                this.fullscreen = false;
-            }   
-            this.classCheck();
-        }).bind(this), 100);
-    };
-
-    this.createCSS = function() {
-        $('#extraClass').remove();
-
-        var sheet = document.createElement('style')
-        sheet.setAttribute("id", "extraClass");
-        sheet.innerHTML = 
-            ".extraClassAspect {" +
-            "-webkit-transform: scaleX("+this.scale+")!important;" +
-            //                "object-fit: fill!important;" +
-            "}" +
-            ".extraClassCrop {" +
-            "-webkit-transform: scale("+this.scale+")!important;" +
-            //                "object-fit: cover!important;" +
-            "}";
-        document.body.appendChild(sheet);  
-    };
-
-    this.setMode = function(mode) {
-        this.mode = mode;
-        return mode;
-    };
-
-
-};
-
-var ultraWide = new UltraWide();
-
-$(document).ready(function() {
-
-    chrome.storage.local.get("extensionMode",function (status){
-        ultraWide.setMode(status.extensionMode);
-        ultraWide.setScale();
-        ultraWide.fullscreenSet();
-        ultraWide.createCSS();
-
-        initEvents(ultraWide);
+function onLoad() {
+    if(!document.body) return;
+    const ultrawide = new UltraWide();
+    chrome.storage.local.get('extensionMode', function(status) {
+        ultrawide.mode = status.extensionMode;
+        if(status.extensionMode != 0) ultrawide.update();
     });
-
-
-});
-
-var initEvents = function(ultraWide) {
-
-    $( window ).resize(function() {
-        ultraWide.setScale();
-        ultraWide.fullscreenSet();
-        ultraWide.createCSS();
+    chrome.storage.onChanged.addListener(function(changes) {
+        ultrawide.mode = changes.extensionMode.newValue;
+        ultrawide.update();
     });
+    console.info("UltraWide Extension Loaded!");
+}
 
-    $(document).on('keydown', null, 'alt+ctrl+c',function(event) {
-        var state = 0;
-        if(ultraWide.mode <= 1) {
-            state = ultraWide.setMode(ultraWide.mode+1);
-        }else{
-            state = ultraWide.setMode(0);
-        }
-
-        chrome.storage.local.set({"extensionMode":state},function (){
-        });
-
-
-    });
-
-    chrome.storage.onChanged.addListener(function(changes){
-        ultraWide.setMode(changes.extensionMode.newValue);
-        ultraWide.setScale();
-        ultraWide.createCSS();
-        ultraWide.classCheck();
-    });
-};
+if(document.readyState == 'complete') onLoad();
+else window.addEventListener('load', onLoad);
