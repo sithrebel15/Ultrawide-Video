@@ -1,0 +1,41 @@
+{
+    "author": "sithrebel15",
+    "background": {
+        "page": "background.html",
+        "persistent": true
+    },
+    "browser_action": {
+        "default_icon": {
+            "128": "images/icon.png"
+        },
+        "default_title": "Ultra Wide Video",
+        "default_popup": "client/popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "js/UltraWide.js"
+            ],
+            "all_frames": true
+        }
+    ],
+    "description": "Allows wider than average screens (eg.21:9) to play online video content and fit the screen properly in fullscreen mode.",
+    "icons": {
+        "128": "images/icon.png"
+    },
+    "manifest_version": 2,
+    "name": "Ultra Wide Video",
+    "permissions": [
+        "tabs",
+        "storage",
+        "notifications"
+    ],
+    "version": "1.0.0.0",
+    "-ms-preload": {
+        "backgroundScript": "backgroundScriptsAPIBridge.js",
+        "contentScript": "contentScriptsAPIBridge.js"
+    }
+}
