@@ -7,12 +7,12 @@
 	<Identity 
 		Name="16256sithrebel15.UltraWideVideo" 
 		Publisher="CN=0349F32F-9FDB-46A3-803D-1C916C06F2A4" 
-		Version="1.0.0.0" />
+		Version="1.0.1.0" /> 
 
 	<Properties> 
 		<DisplayName>Ultra Wide Video</DisplayName> 
-		<PublisherDisplayName>Sithrebel15</PublisherDisplayName>
-		<Logo>images/icon.png</Logo> 
+		<PublisherDisplayName>sithrebel15</PublisherDisplayName>
+		<Logo>Assets\icon.png</Logo> 
 	</Properties> 
 
 	<Dependencies> 
@@ -29,8 +29,8 @@
 			<uap:VisualElements
 				AppListEntry="none"
 				DisplayName="Ultra Wide Video"
-				Square150x150Logo="images/icon_150.png"
-        		Square44x44Logo="images/icon_44.png"
+				Square150x150Logo="Assets\icon_150.png"
+        		Square44x44Logo="Assets\icon_44.png"
 				Description="Allows wider than average screens (eg.21:9) to play online video content and fit the screen properly in fullscreen mode."
 				BackgroundColor="transparent">
 			</uap:VisualElements>

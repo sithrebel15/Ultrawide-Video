@@ -33,7 +33,7 @@
         "storage",
         "notifications"
     ],
-    "version": "1.0.0.0",
+    "version": "1.0.1.0",
     "-ms-preload": {
         "backgroundScript": "backgroundScriptsAPIBridge.js",
         "contentScript": "contentScriptsAPIBridge.js"
